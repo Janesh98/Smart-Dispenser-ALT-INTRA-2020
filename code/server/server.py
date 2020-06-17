@@ -34,23 +34,25 @@ class DispenserData(db.Model):
     fluid_level = db.Column(db.Float)
     ignored = db.Column(db.Boolean)
     datetime = db.Column(db.String(20))
+    device_id = db.Column(db.Integer)
 
-    def __init__(self, distance, volume_dispensed, fluid_level, ignored, datetime):
+    def __init__(self, distance, volume_dispensed, fluid_level, ignored, datetime, device_id):
         self.distance = distance
         self.volume_dispensed = volume_dispensed
         self.fluid_level = fluid_level
         self.ignored = ignored
         self.datetime = datetime
+        self.device_id = device_id
 
 # Dispenser schema
 class DispenserDataSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'distance', 'volume_dispensed', 'fluid_level', 'ignored', 'datetime')
+        fields = ('device_id', 'distance', 'volume_dispensed', 'fluid_level', 'ignored', 'datetime', 'dispenser_id')
 
 # Dispenser Data schema
 class DispenserSchema(ma.Schema):
     class Meta:
-        fields = ('id', 'name', 'location', 'created')
+        fields = ('device_id', 'name', 'location', 'created')
 
 # init schemas
 dispenser_data_schema = DispenserDataSchema()
@@ -69,10 +71,40 @@ def register_dispenser():
 
     # assign id
     if not device_id:
-        print("unregistered device")
-        new_dispenser = Dispenser(name, location, created)
+        device_id = generate_new_id()
+        name = "Dispenser" + str(device_id)
 
-    return dispenser_schema.jsonify(new_dispenser)
+        new_dispenser = Dispenser(name, location, created)
+        
+        try:
+            db.session.add(new_dispenser)
+            db.session.commit()
+        except:
+            return {"message": "Duplicate value, name and/or location already exists"}, 400
+
+
+        return {
+            "device_id": device_id,
+            "name": name,
+            "location": location,
+            "created": created
+            }, 201
+
+    else:
+        return {"message": "device id is already registered"}, 400
+
+def generate_new_id():
+    dispensers = Dispenser.query.all()
+
+    if dispensers:
+        id_list = []
+        for dispenser in dispensers:
+            id_list.append(dispenser.device_id)
+        
+        return max(id_list) + 1
+
+    else:
+        return 1
 
 # add Dispenser Data
 @app.route('/dispenser', methods=['POST'])
@@ -82,10 +114,9 @@ def add_dispenser_data():
     fluid_level = request.json['fluid_level']
     ignored = request.json['ignored']
     datetime = request.json['datetime']
+    device_id = request.json['device_id']
 
-    new_dispenser_data = DispenserData(distance, volume_dispensed, fluid_level, ignored, datetime)
-
-    print(new_dispenser_data.fluid_level)
+    new_dispenser_data = DispenserData(distance, volume_dispensed, fluid_level, ignored, datetime, device_id)
 
     db.session.add(new_dispenser_data)
     db.session.commit()
