@@ -81,8 +81,8 @@ def register_dispenser():
             db.session.commit()
         except:
             return {"message": "Duplicate value, name and/or location already exists"}, 400
-
-
+        
+        # send back updated config
         return {
             "device_id": device_id,
             "name": name,

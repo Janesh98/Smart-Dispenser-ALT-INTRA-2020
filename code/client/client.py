@@ -5,117 +5,107 @@ import string
 from time import sleep
 import json
 
-base_url = "http://localhost:5000/"
+class Client:
+    def __init__(self, base_url):
 
-# device config vars
-device_id = None
-name = ""
-location = ""
+        self.base_url = base_url
 
-try:
-    # load config file
-    with open ("./config.json", "r") as config:
-        # load json file as dictionary
-        config = json.load(config)
+        # device config vars
+        self.device_id = None
+        self.name = ""
+        self.location = ""
+        self.created = ""
 
-        # update device variables
-        device_id = config["device_id"]
-        name = config["name"]
-        location = config["location"]
-
-        print("config succesfully applied")
-
-except FileNotFoundError:
-    print("File config.json not found")
-
-if not location:
-    location = input("Enter location for Dispenser: ")
-
-# update config.json and variables
-def update_config(config, convert=True):
-    if convert:
+    # update config.json and variables
+    def update_config(self, config):
         # convert from json to dictionary
         config = json.loads(config)
 
-    # save config.json file
-    with open('config.json', 'w') as f:
-        json.dump(config, f, indent=4)
+        # update device config variables
+        self.update_vars(config)
 
-def apply_config():
-    try:
-        # load config file
-        with open ("./config.json", "r") as config:
-            # load json file as dictionary
-            config = json.load(config)
+        # save config.json file
+        with open('config.json', 'w') as f:
+            json.dump(config, f, indent=4)
 
-            # update device variables
-            update_config(config, convert=False)
-            print("config succesfully applied")
+    def update_vars(self, config):
+        self.device_id = config["device_id"]
+        self.name = config["name"]
+        self.location = config["location"]
+        self.created = config["created"]
 
-    except FileNotFoundError:
-        print("File config.json not found")
+    def apply_config(self):
+        try:
+            # load config file
+            with open ("./config.json", "r") as config:
+                # load json file as dictionary
+                config = json.load(config)
 
-def register_dispenser():
-    #location = input("Enter location for Dispenser: ")
-    created = dt.now().strftime("%d/%m/%Y, %H:%M:%S")
+                self.update_vars(config)
 
-    data = {
-        "device_id": device_id,
-        "name": name,
-        "location": location,
-        "created": dt.now().strftime("%d/%m/%Y, %H:%M:%S")
+                # ask user for location
+                if not self.location:
+                    self.location = input("Enter location for Dispenser: ")
+
+                print("config succesfully applied")
+
+        except FileNotFoundError:
+            print("File config.json not found")
+
+    def register_dispenser(self):
+        data = {
+            "device_id": self.device_id,
+            "name": self.name,
+            "location": self.location,
+            "created": dt.now().strftime("%d/%m/%Y, %H:%M:%S")
+            }
+
+        response = requests.post(self.base_url + "dispenser/register", json=data)
+
+        print(response.text)
+        print(response.status_code)
+
+        if response.status_code == 201:
+            self.update_config(response.text)
+            print("config succesfully updated")
+
+    # sends data to server to be saved on database
+    def post_data(self):
+        data = self.create_random_data()
+
+        response = requests.post(self.base_url + "dispenser", json=data)
+        print(response.text)
+
+    def run(self):
+        # apply configuration settings
+        self.apply_config()
+
+        # register
+        self.register_dispenser()
+
+        # continuously send data to simulate a high volume scenario
+        while True:
+            self.post_data()
+            sleep(1.0)
+
+    def create_random_data(self):
+        if randint(0, 1) == 0:
+            # whether a user within range decided to use sanitiser
+            ignored = False
+        else:
+            ignored = True
+
+        data = {
+            "device_id": self.device_id,
+            "distance": uniform(0, 2),
+            "volume_dispensed": 1.0,
+            "fluid_level": 669.0,
+            "ignored": ignored,
+            "datetime": dt.now().strftime("%d/%m/%Y, %H:%M:%S")
         }
 
-    response = requests.post(base_url + "dispenser/register", json=data)
-
-    print(response.text)
-    print(response.status_code)
-
-    if response.status_code == 201:
-        update_config(response.text)
-        print("config succesfully updated")
-
-def create_random_data():
-    if randint(0, 1) == 0:
-        # whether a user within range decided to use sanitiser
-        ignored = False
-    else:
-        ignored = True
-
-    data = {
-        "device_id": device_id,
-        "distance": uniform(0, 2),
-        "volume_dispensed": 1.0,
-        "fluid_level": 669.0,
-        "ignored": ignored,
-        "datetime": dt.now().strftime("%d/%m/%Y, %H:%M:%S")
-    }
-
-    return data
-
-# creates a random sequence of digits and letters up to N length
-def random_string(N):
-    s = ''.join(choices(string.ascii_uppercase + string.digits, k=N))
-    return s
-
-# sends data to server to be saved on database
-def send_data():
-    data = create_random_data()
-
-    response = requests.post(base_url + "dispenser", json=data)
-    print(response.text)
-
-def main():
-    # apply configuration settings
-    #apply_config()
-
-    # register
-    register_dispenser()
-
-    # continuously send data to simulate a high volume scenario
-    while True:
-        send_data()
-        sleep(1.0)
+        return data
 
 if __name__ == "__main__":
-    main()
+    client = Client("http://localhost:5000/")
+    client.run()
