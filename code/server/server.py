@@ -71,8 +71,8 @@ def register_dispenser():
     created = request.json['created']
     device_id = request.json['device_id']
 
-    # assign id
-    if not device_id:
+    # assign id if null or id is not registered
+    if not device_id or not check_id(device_id):
         device_id = generate_new_id()
         name = "Dispenser" + str(device_id)
 
@@ -108,15 +108,29 @@ def generate_new_id():
     else:
         return 1
 
+def check_id(device_id):
+    dispenser = Dispenser.query.filter_by(device_id=device_id).first()
+    print(dispenser, device_id)
+    if dispenser: 
+        print(dispenser.device_id)
+        return dispenser.device_id == device_id
+
+    return False
+
 # add Dispenser Data
 @app.route('/dispenser', methods=['POST'])
 def add_dispenser_data():
+    device_id = request.json['device_id']
+
+    # check if id is registered
+    if not check_id(device_id):
+        return {"message": "device id is not registered"}, 404
+
     distance = request.json['distance']
     volume_dispensed = request.json['volume_dispensed']
     fluid_level = request.json['fluid_level']
     ignored = request.json['ignored']
     datetime = request.json['datetime']
-    device_id = request.json['device_id']
 
     new_dispenser_data = DispenserData(distance, volume_dispensed, fluid_level, ignored, datetime, device_id)
 
@@ -126,8 +140,8 @@ def add_dispenser_data():
     return dispenser_data_schema.jsonify(new_dispenser_data)
 
 # get all dispensers
-@app.route('/dispensers', methods=['GET'])
-def test():
+@app.route('/dispensers/all', methods=['GET'])
+def get_all_dispensers():
     # get all dispenser data
     all_dispensers = DispenserData.query.all()
 
@@ -136,6 +150,11 @@ def test():
 
     # convert to json and send
     return jsonify(result)
+
+# delete dispenser and associated data
+@app.route('/dispensers/delete/<id>', methods=['Delete'])
+def delete_dispenser(id):
+    print(id)
 
 # run Server
 if __name__ == '__main__':

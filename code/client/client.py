@@ -90,7 +90,7 @@ class Client:
         # continuously send data to simulate a high volume scenario
         while True:
             self.post_data()
-            #sleep(1.0)
+            sleep(1.0)
 
     # dispense sanitiser
     def dispense(self):
