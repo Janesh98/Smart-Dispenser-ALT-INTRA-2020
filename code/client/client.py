@@ -16,6 +16,10 @@ class Client:
         self.location = ""
         self.created = ""
 
+        self.fluid_capacity = 1000.0
+        self.fluid_dispense_volume = 1.0
+        self.fluid_level = self.fluid_capacity
+
     # update config.json and variables
     def update_config(self, config):
         # convert from json to dictionary
@@ -86,7 +90,20 @@ class Client:
         # continuously send data to simulate a high volume scenario
         while True:
             self.post_data()
-            sleep(1.0)
+            #sleep(1.0)
+
+    # dispense sanitiser
+    def dispense(self):
+        # refill fluid level
+        if self.fluid_level <= 0.0:
+            print("fluid levels low, refilling...")
+            self.fluid_level = self.fluid_capacity
+            print("fluid levels successfully refilled")
+        
+        else:
+            self.fluid_level -= self.fluid_dispense_volume
+
+        return self.fluid_level
 
     def create_random_data(self):
         if randint(0, 1) == 0:
@@ -99,7 +116,7 @@ class Client:
             "device_id": self.device_id,
             "distance": uniform(0, 2),
             "volume_dispensed": 1.0,
-            "fluid_level": 669.0,
+            "fluid_level": self.dispense(),
             "ignored": ignored,
             "datetime": dt.now().strftime("%d/%m/%Y, %H:%M:%S")
         }
@@ -107,5 +124,5 @@ class Client:
         return data
 
 if __name__ == "__main__":
-    client = Client("http://localhost:5000/")
+    client = Client("http://192.168.0.52:5000/")
     client.run()
