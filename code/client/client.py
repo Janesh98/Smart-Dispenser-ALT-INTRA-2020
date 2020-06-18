@@ -63,7 +63,7 @@ class Client:
         response = requests.post(self.base_url + "dispenser/register", json=data)
 
         print(response.text)
-        #print(response.status_code)
+        print(response.status_code)
 
         if response.status_code == 201:
             self.update_config(response.text)

@@ -17,15 +17,17 @@ db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
 class Dispenser(db.Model):
-    device_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True)
-    location = db.Column(db.String(20), unique=True)
+    location = db.Column(db.String(20))
     created = db.Column(db.String(20))
+    device_id = db.Column(db.Integer, unique=True)
 
-    def __init__(self, name, location, created):
+    def __init__(self, name, location, created, device_id):
         self.name = name
         self.location = location
         self.created = created
+        self.device_id = device_id
 
 class DispenserData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -47,12 +49,12 @@ class DispenserData(db.Model):
 # Dispenser schema
 class DispenserDataSchema(ma.Schema):
     class Meta:
-        fields = ('device_id', 'distance', 'volume_dispensed', 'fluid_level', 'ignored', 'datetime', 'dispenser_id')
+        fields = ('id','distance', 'volume_dispensed', 'fluid_level', 'ignored', 'datetime', 'device_id')
 
 # Dispenser Data schema
 class DispenserSchema(ma.Schema):
     class Meta:
-        fields = ('device_id', 'name', 'location', 'created')
+        fields = ('id', 'name', 'location', 'created', 'device_id')
 
 # init schemas
 dispenser_data_schema = DispenserDataSchema()
@@ -64,17 +66,17 @@ dispensers_schema = DispenserSchema(many=True)
 # register dispenser
 @app.route('/dispenser/register', methods=['POST'])
 def register_dispenser():
-    device_id = request.json['device_id']
     name = request.json['name']
     location = request.json['location']
     created = request.json['created']
+    device_id = request.json['device_id']
 
     # assign id
     if not device_id:
         device_id = generate_new_id()
         name = "Dispenser" + str(device_id)
 
-        new_dispenser = Dispenser(name, location, created)
+        new_dispenser = Dispenser(name, location, created, device_id)
         
         try:
             db.session.add(new_dispenser)
