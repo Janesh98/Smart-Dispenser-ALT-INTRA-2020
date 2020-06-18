@@ -77,7 +77,7 @@ class Client:
     def post_data(self):
         data = self.create_random_data()
 
-        response = requests.post(self.base_url + "dispenser", json=data)
+        response = requests.post(self.base_url + "dispenser/data", json=data)
         print(response.text)
 
     def run(self):
@@ -124,5 +124,5 @@ class Client:
         return data
 
 if __name__ == "__main__":
-    client = Client("http://192.168.0.52:5000/")
+    client = Client("http://192.168.0.52:5000/api/")
     client.run()

@@ -64,7 +64,7 @@ dispenser_schema = DispenserSchema()
 dispensers_schema = DispenserSchema(many=True)
 
 # register dispenser
-@app.route('/dispenser/register', methods=['POST'])
+@app.route('/api/dispenser/register', methods=['POST'])
 def register_dispenser():
     name = request.json['name']
     location = request.json['location']
@@ -118,7 +118,7 @@ def check_id(device_id):
     return False
 
 # add Dispenser Data
-@app.route('/dispenser', methods=['POST'])
+@app.route('/api/dispenser/data', methods=['POST'])
 def add_dispenser_data():
     device_id = request.json['device_id']
 
@@ -139,22 +139,90 @@ def add_dispenser_data():
 
     return dispenser_data_schema.jsonify(new_dispenser_data)
 
-# get all dispensers
-@app.route('/dispensers/all', methods=['GET'])
-def get_all_dispensers():
+# get all dispensers data
+@app.route('/api/dispenser/data/all', methods=['GET'])
+def get_all_dispensers_data():
     # get all dispenser data
-    all_dispensers = DispenserData.query.all()
+    all_dispensers_data = DispenserData.query.all()
 
     # convert data to dictionary
-    result = dispensers_data_schema.dump(all_dispensers)
+    result = dispensers_data_schema.dump(all_dispensers_data)
 
     # convert to json and send
     return jsonify(result)
 
+# get single dispensers data
+@app.route('/api/dispenser/data/<device_id>', methods=['GET'])
+def get_dispenser_data(device_id):
+    # get dispenser data
+    dispenser_data = DispenserData.query.filter_by(device_id=device_id).all()
+
+    if dispenser_data:
+        # convert data to dictionary
+        result = dispensers_data_schema.dump(dispenser_data)
+
+        # convert to json and send
+        return jsonify(result)
+
+    else:
+        return {"message": "device id is not registered"}, 404
+
+# get all dispensers
+@app.route('/api/dispenser/all', methods=['GET'])
+def get_all_dispensers():
+    # get all dispenser data
+    all_dispensers = Dispenser.query.all()
+
+    # convert data to dictionary
+    result = dispensers_schema.dump(all_dispensers)
+
+    # convert to json and send
+    return jsonify(result)
+
+# get single dispenser
+@app.route('/api/dispenser/<device_id>', methods=['GET'])
+def get_dispenser(device_id):
+    # get dispenser
+    dispenser = Dispenser.query.filter_by(device_id=device_id).first()
+
+    if dispenser:
+        # convert data to dictionary
+        result = dispenser_schema.dump(dispenser)
+
+        # convert to json and send
+        return jsonify(result)
+
+    else:
+        return {"message": "device id is not registered"}, 404
+
+def delete(items):
+    for item in items:
+        db.session.delete(item)
+
 # delete dispenser and associated data
-@app.route('/dispensers/delete/<id>', methods=['Delete'])
-def delete_dispenser(id):
-    print(id)
+@app.route('/api/dispenser/delete/<device_id>', methods=['Delete'])
+def delete_dispenser(device_id):
+    # get dispenser with given device_id
+    dispenser = Dispenser.query.filter_by(device_id=device_id).all()
+
+    # get all dispenser data for a given device_id
+    dispenser_data = DispenserData.query.filter_by(device_id=device_id).all()
+
+    if dispenser and dispenser_data:
+
+        # delete dispenser
+        delete(dispenser)
+
+        # delete dispenser data
+        delete(dispenser_data)
+
+        # commit changes to databse
+        db.session.commit()
+
+        return {"message": "device with id " + device_id + " and all associated data successfully deleted"}, 200
+    
+    else:
+        return {"message": "device id is not registered"}, 404
 
 # run Server
 if __name__ == '__main__':
