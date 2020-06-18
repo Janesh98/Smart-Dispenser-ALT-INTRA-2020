@@ -3,7 +3,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-
+from waitress import serve
 # init app
 app = Flask(__name__)
 
@@ -227,4 +227,4 @@ def delete_dispenser(device_id):
 # run Server
 if __name__ == '__main__':
     # ip 0.0.0.0 allows all devices on the network to connect
-    app.run(debug=True, threaded=True, host='0.0.0.0', port=5000)
+    serve(app, host='0.0.0.0', port=8080, url_scheme='https')

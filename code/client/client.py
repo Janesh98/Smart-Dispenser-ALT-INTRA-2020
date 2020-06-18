@@ -148,5 +148,5 @@ class Client:
         return data
 
 if __name__ == "__main__":
-    client = Client("http://192.168.0.52:5000/api/")
+    client = Client("http://192.168.0.52:8080/api/")
     client.run()
