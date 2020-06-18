@@ -1,7 +1,6 @@
 import requests
 from datetime import datetime as dt
 from random import randint, uniform, choices
-import string
 from time import sleep
 import json
 
@@ -10,12 +9,16 @@ class Client:
 
         self.base_url = base_url
 
+        # save data when server is down
+        self.temp = []
+
         # device config vars
         self.device_id = None
         self.name = ""
         self.location = ""
         self.created = ""
 
+        # device fluid settings
         self.fluid_capacity = 1000.0
         self.fluid_dispense_volume = 1.0
         self.fluid_level = self.fluid_capacity
@@ -32,12 +35,14 @@ class Client:
         with open('config.json', 'w') as f:
             json.dump(config, f, indent=4)
 
+    # update device congig vars
     def update_vars(self, config):
         self.device_id = config["device_id"]
         self.name = config["name"]
         self.location = config["location"]
         self.created = config["created"]
 
+    # apply device config from json file
     def apply_config(self):
         try:
             # load config file
@@ -56,6 +61,7 @@ class Client:
         except FileNotFoundError:
             print("File config.json not found")
 
+    # register dispenser on api
     def register_dispenser(self):
         data = {
             "device_id": self.device_id,
@@ -63,8 +69,12 @@ class Client:
             "location": self.location,
             "created": dt.now().strftime("%d/%m/%Y, %H:%M:%S")
             }
-
-        response = requests.post(self.base_url + "dispenser/register", json=data)
+        
+        try:
+            response = requests.post(self.base_url + "dispenser/register", json=data)
+        except:
+            print("server if offline")
+            exit()
 
         print(response.text)
         print(response.status_code)
@@ -74,11 +84,18 @@ class Client:
             print("config succesfully updated")
 
     # sends data to server to be saved on database
-    def post_data(self):
-        data = self.create_random_data()
+    def post_data(self, data=[]):
+        if not data:
+            data = self.create_random_data()
 
-        response = requests.post(self.base_url + "dispenser/data", json=data)
-        print(response.text)
+        try:
+            response = requests.post(self.base_url + "dispenser/data", json=data)
+            print(response.text)
+
+        except:
+            print("temporaily saving data as server is offline")
+            # store data temporarily
+            self.temp.append(data)
 
     def run(self):
         # apply configuration settings
@@ -89,6 +106,13 @@ class Client:
 
         # continuously send data to simulate a high volume scenario
         while True:
+            length = len(self.temp)
+            # check if data is temporalily saved
+            if length > 0:
+                # attempt to send data again
+                for _ in range(length):
+                    self.post_data(self.temp.pop(0))
+
             self.post_data()
             sleep(1.0)
 
