@@ -2,7 +2,7 @@
 > using Windows10, Python3.8, MySQL, Flask, SQL Alchemy, Marshmallow, Keras.
 
 ## Prerequisites
-set up a mysql server and replace the line:  
+Set up a mysql server and replace the line:  
 ```app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://janesh:password@localhost/testdatabase'```  
 with your own modified version corresponding to your database settings:  
 ```app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://<username>:<password>@<server ip>/<database name>```
