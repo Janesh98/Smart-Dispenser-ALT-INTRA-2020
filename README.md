@@ -1,5 +1,5 @@
 # Smart Dispenser Rest Network API and data analysis
-> using Windows10, Python3.8, Flask, SQL Alchemy, Marshmallow, Keras.
+> using Windows10, Python3.8, MySQL, Flask, SQL Alchemy, Marshmallow, Keras.
 
 ## Prerequisites
 set up a mysql server and replace the line:
