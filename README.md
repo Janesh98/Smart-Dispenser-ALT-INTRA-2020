@@ -10,7 +10,7 @@ with your own modified version corresponding to your database settings:
 ## Quick Start
 ``` bash
 # install dependencies
-$ pip3 install requirements.txt
+$ pip3 install -r requirements.txt
 
 # create database
 $ create_db.py
