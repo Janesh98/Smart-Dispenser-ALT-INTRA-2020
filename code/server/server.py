@@ -110,9 +110,7 @@ def generate_new_id():
 
 def check_id(device_id):
     dispenser = Dispenser.query.filter_by(device_id=device_id).first()
-    print(dispenser, device_id)
     if dispenser: 
-        print(dispenser.device_id)
         return dispenser.device_id == device_id
 
     return False
@@ -137,7 +135,7 @@ def add_dispenser_data():
     db.session.add(new_dispenser_data)
     db.session.commit()
 
-    return dispenser_data_schema.jsonify(new_dispenser_data)
+    return "OK", 201
 
 # get all dispensers data
 @app.route('/api/dispenser/data/all', methods=['GET'])

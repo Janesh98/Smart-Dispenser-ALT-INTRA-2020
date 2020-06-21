@@ -1,7 +1,7 @@
 import requests
 import matplotlib.pyplot as plt
 
-base_url = "http://192.168.0.52:8080/api/"
+base_url = "http://localhost:8080/api/"
 
 def get_data(url):
     response = requests.get(base_url + url)

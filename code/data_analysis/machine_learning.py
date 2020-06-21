@@ -42,7 +42,7 @@ def main():
 
     for i in range(len(test_output)):
         prediction = round(test_output[i][0])
-        print("Dispenser {} will run out of sanitizer in {} days".format(prediction, i))
+        print("Dispenser {} will run out of sanitizer in {} days".format(i+1, prediction))
 
 if __name__ == "__main__":
     main()

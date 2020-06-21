@@ -76,9 +76,6 @@ class Client:
             print("server if offline")
             exit()
 
-        print(response.text)
-        print(response.status_code)
-
         if response.status_code == 201:
             self.update_config(response.text)
             print("config succesfully updated")
@@ -89,8 +86,8 @@ class Client:
             data = self.create_random_data()
 
         try:
-            response = requests.post(self.base_url + "dispenser/data", json=data)
-            print(response.text)
+            requests.post(self.base_url + "dispenser/data", json=data)
+            print("Data successfully sent: {}".format(data))
 
         except:
             print("temporaily saving data as server is offline")
@@ -114,7 +111,7 @@ class Client:
                     self.post_data(self.temp.pop(0))
 
             self.post_data()
-            sleep(1.0)
+            sleep(1)
 
     # dispense sanitiser
     def dispense(self):
@@ -148,5 +145,5 @@ class Client:
         return data
 
 if __name__ == "__main__":
-    client = Client("http://192.168.0.52:8080/api/")
+    client = Client("http://localhost:8080/api/")
     client.run()
