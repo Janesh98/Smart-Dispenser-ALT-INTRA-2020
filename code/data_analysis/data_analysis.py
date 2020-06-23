@@ -22,9 +22,9 @@ def compute_statistics(dispensers, dispenser_data):
                 ignored.append(data["ignored"])
         
         # % dispenser was ignored
-        ignored_rate = sum(ignored) / len(ignored)
+        ignored_rate = sum(ignored) / len(ignored) * 100
         # % dispenser was not ignored
-        adherence_rate = 1 - ignored_rate
+        adherence_rate = 100 - ignored_rate
 
         # number of times dispenser was used
         # False ignore entries mean a dispensal occurred
@@ -39,7 +39,7 @@ def compute_statistics(dispensers, dispenser_data):
         print("{}\nLocation: {}\nCreated: {}\nDevice_id: {:d}\nIgnored rate: {:.2f}%\nAdherence rate: {:.2f}%\nTotal dispenses: {:d}\n".format(name, location, created, id_1, ignored_rate, adherence_rate, dispensal_count))
 
     overall_ignored_rate = sum(overall_ignored) / len(overall_ignored)
-    overall_adherence_rate = 1 - overall_ignored_rate
+    overall_adherence_rate = 100 - overall_ignored_rate
 
     overall_total_dispenses = sum(overall_dispenses)
 
