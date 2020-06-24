@@ -222,6 +222,10 @@ def delete_dispenser(device_id):
     else:
         return {"message": "device id is not registered"}, 404
 
+@app.before_request
+def before_request_func():
+    print(request.method, request.url, request.remote_addr, request.endpoint)
+
 # run Server
 if __name__ == '__main__':
     # ip 0.0.0.0 allows all devices on the network to connect
